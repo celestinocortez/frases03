@@ -32,6 +32,8 @@ python3 -m http.server 3210
 
 ## Detalhes técnicos
 
+- **Data/hora do último commit no rodapé.** Lê a API do GitHub ao vivo (🚀); se a API falhar — rate limit, offline ou aberto via `file://` — cai na data embutida no build (🕒). Nunca fica vazio. Clicar no rodapé abre o histórico de commits.
+- **Cada humor tem emoji próprio** no selo: 😄 alegria · 😔 tristeza · 🙃 cinismo · 🔥 mojo.
 - **Zero dependências.** Nenhum npm, nenhum CDN de JS. Só Google Fonts (Inter + JetBrains Mono).
 - **Confete em canvas puro**, escrito à mão: ~110 partículas por estouro, com gravidade, arrasto, rotação e achatamento no eixo Y (dá a sensação de girar no ar).
 - **Cada tom tem sua física.** Alegria sobe mais e cai devagar; tristeza cai pesado; cinismo quase não sai do chão; mojo explode mais forte.

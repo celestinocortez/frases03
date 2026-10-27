@@ -111,6 +111,15 @@
     animation: pulsar 2s ease-in-out infinite;
   }
 
+  .tom-emoji {
+    font-size: .95em;
+    line-height: 1;
+    filter: grayscale(.25);
+    transition: transform 300ms ease, filter 300ms ease;
+  }
+
+  .tom:hover .tom-emoji { transform: scale(1.2) rotate(-6deg); filter: none; }
+
   @keyframes pulsar {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: .35; transform: scale(.8); }
@@ -246,6 +255,34 @@
     text-transform: uppercase;
   }
 
+  /* ---------- rodapé: última atualização ---------- */
+  .build {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .06em;
+    color: #52525b;
+    transition: color 300ms ease;
+  }
+
+  .build:hover { color: #a1a1aa; }
+
+  .build-emoji {
+    font-size: .95em;
+    line-height: 1;
+    filter: grayscale(.35);
+    transition: filter 300ms ease, transform 300ms ease;
+  }
+
+  .build:hover .build-emoji { filter: none; transform: scale(1.15); }
+
+  .build time {
+    color: #71717a;
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ---------- responsivo ---------- */
   @media (max-width: 480px) {
     blockquote { max-width: 100%; }
@@ -270,6 +307,7 @@
 <main>
   <div class="tom" id="tom">
     <span class="ponto"></span>
+    <span id="tomEmoji" class="tom-emoji" aria-hidden="true">✦</span>
     <span id="tomNome">carregando</span>
   </div>
 
@@ -287,6 +325,11 @@
   </div>
 
   <p class="contador" id="contador">0 frases</p>
+
+  <p class="build" id="build">
+    <span class="build-emoji" id="buildEmoji" aria-hidden="true">🕒</span>
+    <span class="build-txt">última atualização <time id="buildData">—</time></span>
+  </p>
 </main>
 
 <script>
@@ -299,6 +342,7 @@
 const TONS = {
   alegria: {
     nome: 'alegria',
+    emoji: '😄',
     a: '#fbbf24',
     b: '#f97316',
     glow: 'rgba(251, 191, 36, 0.30)',
@@ -309,6 +353,7 @@ const TONS = {
   },
   tristeza: {
     nome: 'tristeza',
+    emoji: '😔',
     a: '#60a5fa',
     b: '#4f46e5',
     glow: 'rgba(96, 165, 250, 0.26)',
@@ -319,6 +364,7 @@ const TONS = {
   },
   cinismo: {
     nome: 'cinismo',
+    emoji: '🙃',
     a: '#94a3b8',
     b: '#475569',
     glow: 'rgba(148, 163, 184, 0.20)',
@@ -329,6 +375,7 @@ const TONS = {
   },
   mojo: {
     nome: 'mojo',
+    emoji: '🔥',
     a: '#f472b6',
     b: '#a855f7',
     glow: 'rgba(244, 114, 182, 0.32)',
@@ -406,6 +453,8 @@ function aplicarTom(tom) {
   r.setProperty('--tom-b', tom.b);
   r.setProperty('--tom-glow', tom.glow);
   el.tomNome.textContent = tom.nome;
+  const em = document.getElementById('tomEmoji');
+  if (em) em.textContent = tom.emoji || '✦';
 }
 
 /* ---------- sorteia uma frase diferente da atual ---------- */
@@ -554,6 +603,63 @@ function animar() {
     ctx.clearRect(0, 0, L, A);
   }
 }
+
+/* ============================================================
+   ÚLTIMA ATUALIZAÇÃO
+   Tenta a API do GitHub; se falhar (rate limit, offline, aberto
+   via file://), cai no carimbo embutido no build. Nunca fica "—".
+   ============================================================ */
+const REPO = 'celestinocortez/frases03';
+const BUILD_FALLBACK = '2026-10-27T01:13:53Z';   // substituído no commit
+
+function formataData(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  const p = n => String(n).padStart(2, '0');
+  return {
+    data: `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`,
+    hora: `${p(d.getHours())}:${p(d.getMinutes())}`,
+    completo: `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} às ${p(d.getHours())}:${p(d.getMinutes())}`
+  };
+}
+
+function pintaBuild(quando, origem) {
+  const alvo = document.getElementById('buildData');
+  const emoji = document.getElementById('buildEmoji');
+  const f = formataData(quando);
+  if (!alvo || !f) return;
+
+  alvo.textContent = f.completo;
+  alvo.setAttribute('datetime', new Date(quando).toISOString());
+  if (emoji) emoji.textContent = origem === 'api' ? '🚀' : '🕒';
+
+  const wrap = document.getElementById('build');
+  if (wrap) wrap.title = origem === 'api'
+    ? 'Último commit no GitHub'
+    : 'Data do build (GitHub indisponível agora)';
+}
+
+/* mostra o fallback já, para nunca aparecer vazio */
+if (BUILD_FALLBACK && BUILD_FALLBACK !== '__BUILD__') {
+  pintaBuild(BUILD_FALLBACK, 'build');
+}
+
+/* tenta o dado mais fresco */
+fetch(`https://api.github.com/repos/${REPO}/commits?per_page=1`, {
+  headers: { 'Accept': 'application/vnd.github+json' }
+})
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(lista => {
+    const iso = lista?.[0]?.commit?.committer?.date;
+    if (!iso) throw new Error('sem data');
+    pintaBuild(iso, 'api');
+  })
+  .catch(() => { /* silencioso: o fallback já está na tela */ });
+
+/* atalho: clicar no rodapé abre o commit */
+document.getElementById('build')?.addEventListener('click', () => {
+  window.open(`https://github.com/${REPO}/commits/main`, '_blank', 'noopener');
+});
 
 /* ============================================================
    EVENTOS
