@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frases de TI</title>
+<meta name="description" content="Um botão. Uma frase de TI. Um efeito. Quatro humores.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --tom-a: #22d3ee;
+    --tom-b: #6366f1;
+    --tom-glow: rgba(34, 211, 238, 0.35);
+    --bg: #07070c;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: #f4f4f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    overflow: hidden;
+    position: relative;
+    transition: background 700ms ease;
+  }
+
+  /* ---------- fundo: grade + brilho que segue o tom ---------- */
+  .grid-bg {
+    position: fixed;
+    inset: -50%;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 62%);
+    -webkit-mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 62%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .aurora {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 130vw; height: 130vw;
+    max-width: 1200px; max-height: 1200px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 50% 50%,
+      var(--tom-glow) 0%, transparent 55%);
+    filter: blur(70px);
+    opacity: .85;
+    pointer-events: none;
+    z-index: 0;
+    transition: background 900ms ease;
+  }
+
+  /* ---------- confete ---------- */
+  #confete {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  /* ---------- palco ---------- */
+  main {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.6rem, 4vw, 2.8rem);
+    text-align: center;
+  }
+
+  /* ---------- selo do tom ---------- */
+  .tom {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .45rem 1.05rem;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--tom-a);
+    background: color-mix(in srgb, var(--tom-a) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tom-a) 32%, transparent);
+    transition: color 450ms ease, background 450ms ease, border-color 450ms ease;
+  }
+
+  .tom .ponto {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--tom-a);
+    box-shadow: 0 0 12px var(--tom-a);
+    animation: pulsar 2s ease-in-out infinite;
+  }
+
+  @keyframes pulsar {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .35; transform: scale(.8); }
+  }
+
+  /* ---------- a frase ---------- */
+  .palco-frase {
+    min-height: clamp(180px, 32vh, 260px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  blockquote {
+    font-size: clamp(1.28rem, 3.6vw, 2.15rem);
+    font-weight: 300;
+    line-height: 1.45;
+    letter-spacing: -.015em;
+    max-width: 20ch;
+    margin: 0 auto;
+    text-wrap: balance;
+    color: #fafafa;
+    transition: opacity 320ms ease, transform 320ms ease, filter 320ms ease;
+  }
+
+  blockquote.saindo {
+    opacity: 0;
+    transform: translateY(-10px) scale(.985);
+    filter: blur(3px);
+  }
+
+  blockquote.entrando {
+    animation: entrar 520ms cubic-bezier(.2,.8,.3,1) forwards;
+  }
+
+  @keyframes entrar {
+    from { opacity: 0; transform: translateY(14px) scale(.985); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  /* o comentário em código, embaixo da frase */
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: #71717a;
+    letter-spacing: .03em;
+    transition: opacity 320ms ease;
+    min-height: 1.2em;
+  }
+
+  .meta .hash { color: var(--tom-a); opacity: .8; }
+  .meta .aspas { color: #3f3f46; }
+
+  /* ---------- botão ---------- */
+  .btn-wrap { position: relative; }
+
+  .btn-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 999px;
+    background: radial-gradient(circle, var(--tom-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 400ms ease;
+    pointer-events: none;
+  }
+
+  .btn-wrap:hover::after { opacity: 1; }
+
+  button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .7rem;
+    padding: 1.05rem 2.5rem;
+    border: none;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: #08080c;
+    background: linear-gradient(120deg, var(--tom-a), var(--tom-b));
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 180ms cubic-bezier(.2,.8,.3,1),
+                box-shadow 400ms ease,
+                background 600ms ease;
+    box-shadow: 0 8px 30px -8px var(--tom-glow),
+                inset 0 1px 0 rgba(255,255,255,.28);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:hover { transform: translateY(-2px) scale(1.02); }
+  button:active { transform: translateY(0) scale(.98); }
+
+  button:focus-visible {
+    outline: 2px solid var(--tom-a);
+    outline-offset: 5px;
+  }
+
+  /* brilho que atravessa o botão */
+  button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -70%;
+    width: 45%; height: 100%;
+    background: linear-gradient(100deg,
+      transparent, rgba(255,255,255,.5), transparent);
+    transform: skewX(-18deg);
+    animation: varrer 4.5s ease-in-out infinite;
+  }
+
+  @keyframes varrer {
+    0%, 62% { left: -70%; }
+    88%, 100% { left: 130%; }
+  }
+
+  button .seta {
+    transition: transform 220ms cubic-bezier(.2,.8,.3,1);
+    font-size: 1.05em;
+  }
+
+  button:hover .seta { transform: translateX(4px); }
+
+  /* ---------- contador discreto ---------- */
+  .contador {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    color: #3f3f46;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- responsivo ---------- */
+  @media (max-width: 480px) {
+    blockquote { max-width: 100%; }
+    button { padding: .95rem 1.9rem; font-size: .85rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="aurora" id="aurora"></div>
+<canvas id="confete"></canvas>
+
+<main>
+  <div class="tom" id="tom">
+    <span class="ponto"></span>
+    <span id="tomNome">carregando</span>
+  </div>
+
+  <div class="palco-frase">
+    <blockquote id="frase">…</blockquote>
+  </div>
+
+  <p class="meta" id="meta"></p>
+
+  <div class="btn-wrap">
+    <button id="botao" autofocus>
+      OUTRA FRASE
+      <span class="seta" aria-hidden="true">→</span>
+    </button>
+  </div>
+
+  <p class="contador" id="contador">0 frases</p>
+</main>
+
+<script>
+/* ============================================================
+   FRASES DE TI
+   Quatro humores. Um botão. Confete a cada toque.
+   Zero dependências — tudo aqui dentro.
+   ============================================================ */
+
+const TONS = {
+  alegria: {
+    nome: 'alegria',
+    a: '#fbbf24',
+    b: '#f97316',
+    glow: 'rgba(251, 191, 36, 0.30)',
+    confete: ['#fbbf24', '#f97316', '#fde68a', '#fb923c', '#fef3c7'],
+    formas: ['circulo', 'retangulo', 'circulo'],
+    gravidade: 0.22,
+    forca: 1.15
+  },
+  tristeza: {
+    nome: 'tristeza',
+    a: '#60a5fa',
+    b: '#4f46e5',
+    glow: 'rgba(96, 165, 250, 0.26)',
+    confete: ['#60a5fa', '#3b82f6', '#a5b4fc', '#818cf8', '#cbd5e1'],
+    formas: ['retangulo', 'circulo'],
+    gravidade: 0.30,
+    forca: 0.78
+  },
+  cinismo: {
+    nome: 'cinismo',
+    a: '#94a3b8',
+    b: '#475569',
+    glow: 'rgba(148, 163, 184, 0.20)',
+    confete: ['#94a3b8', '#64748b', '#cbd5e1', '#475569', '#a1a1aa'],
+    formas: ['retangulo'],
+    gravidade: 0.34,
+    forca: 0.62
+  },
+  mojo: {
+    nome: 'mojo',
+    a: '#f472b6',
+    b: '#a855f7',
+    glow: 'rgba(244, 114, 182, 0.32)',
+    confete: ['#f472b6', '#a855f7', '#ec4899', '#c084fc', '#22d3ee', '#fb7185'],
+    formas: ['circulo', 'retangulo', 'circulo'],
+    gravidade: 0.19,
+    forca: 1.35
+  }
+};
+
+const FRASES = [
+  /* ---- alegria ---- */
+  { t: 'alegria', f: 'Compilou de primeira. Ninguém viu, ninguém acredita.', c: 'deploy_feliz.log' },
+  { t: 'alegria', f: 'O bug sumiu sozinho. Aceitei como presente e não perguntei nada.', c: 'nao_questionar.sh' },
+  { t: 'alegria', f: 'Funciona na minha máquina. E hoje isso basta.', c: 'localmente_ok' },
+  { t: 'alegria', f: 'Achei o ponto e vírgula. Foram quarenta minutos, mas achei.', c: 'ponto_e_virgula.js' },
+  { t: 'alegria', f: 'A documentação estava certa. Isso quase nunca acontece.', c: 'rtfm_sucesso' },
+  { t: 'alegria', f: 'Sexta-feira, deploy feito, pager em silêncio. Isso é felicidade.', c: 'sexta_17h59' },
+  { t: 'alegria', f: 'O código que eu escrevi há seis meses ainda faz sentido. Estou bem.', c: 'legado_amigavel' },
+  { t: 'alegria', f: 'Zero warnings no build. Vou guardar esse print para os dias difíceis.', c: 'build_limpo' },
+
+  /* ---- tristeza ---- */
+  { t: 'tristeza', f: 'O teste passou. O usuário não.', c: 'green_but_wrong' },
+  { t: 'tristeza', f: 'Era só um ajuste rápido. Comecei na terça, é domingo.', c: 'so_um_ajuste' },
+  { t: 'tristeza', f: 'A doc dizia que estava descontinuado. Ninguém leu. Agora é problema meu.', c: 'deprecated' },
+  { t: 'tristeza', f: 'Escrevi 400 linhas. O revisor apagou 380. Ele estava certo.', c: 'squash_commit' },
+  { t: 'tristeza', f: 'O servidor caiu de madrugada e ninguém sabe por quê. Inclusive ele.', c: 'causa_raiz' },
+  { t: 'tristeza', f: 'Meu script funcionava ontem. Hoje ele não existe mais.', c: 'rm_rf_acidente' },
+  { t: 'tristeza', f: 'A reunião podia ter sido um e-mail. Foram duas horas e nenhuma decisão.', c: 'agenda_cheia' },
+  { t: 'tristeza', f: 'Descobri que a gambiarra de 2019 era minha. E ela é load-bearing.', c: 'gambiarra_estrutural' },
+
+  /* ---- cinismo ---- */
+  { t: 'cinismo', f: 'Vamos resolver isso com uma camada de abstração em cima.', c: 'mais_uma_camada' },
+  { t: 'cinismo', f: 'A solução definitiva foi substituída na semana seguinte.', c: 'definitiva_v2_final' },
+  { t: 'cinismo', f: 'Sim, é só um MVP. Ele tem 340 mil linhas e três anos de idade.', c: 'mvp_maduro' },
+  { t: 'cinismo', f: 'O roadmap tem quatro prioridades e todas são P0.', c: 'tudo_p0' },
+  { t: 'cinismo', f: 'Limpamos a dívida técnica criando uma dívida técnica maior e mais organizada.', c: 'refactor_tecnico' },
+  { t: 'cinismo', f: 'Temos cobertura de 92%. Nenhum teste toca o que quebrou.', c: 'cobertura_teatral' },
+  { t: 'cinismo', f: 'Já que funciona, não precisa de teste. Já que não tem teste, não ouse mexer.', c: 'nao_mexer_no_que_funciona' },
+  { t: 'cinismo', f: 'Contratei uma ferramenta de produtividade e passei a semana configurando ela.', c: 'meta_trabalho' },
+  { t: 'cinismo', f: 'A arquitetura é escalável. O time, não.', c: 'escalabilidade_seletiva' },
+
+  /* ---- mojo ---- */
+  { t: 'mojo', f: 'Achei o bug. Era o DNS. É sempre o DNS.', c: 'sempre_dns' },
+  { t: 'mojo', f: 'Apaguei 2 mil linhas e o projeto ganhou uma semana de vida.', c: 'delecao_minimalista' },
+  { t: 'mojo', f: 'Deployou. Está no ar. Está respondendo. Está rápido. Estou impossível.', c: 'shipada' },
+  { t: 'mojo', f: 'O regex funcionou na primeira tentativa. Hoje eu sou lendário.', c: 'regex_primeira' },
+  { t: 'mojo', f: 'Refatorei uma peça de cada vez e no final o monstro virou Lego.', c: 'refactor_feito' },
+  { t: 'mojo', f: 'Passei o dia medindo em vez de adivinhar. O número era óbvio. Ninguém tinha medido.', c: 'medir_primeiro' },
+  { t: 'mojo', f: 'Troquei o loop quadrático por uma tabela hash. Ela caiu de 40 segundos para 12ms.', c: 'big_o_domado' },
+  { t: 'mojo', f: 'Escrevi o teste antes do código e ele falhou bonito. Depois passou. Isso é o gosto do trabalho bem feito.', c: 'red_green' },
+  { t: 'mojo', f: 'Subi em produção às 10h de uma quarta. Cinto apertado, coração tranquilo.', c: 'quarta_10h' }
+];
+
+/* ---------- estado ---------- */
+const el = {
+  body: document.body,
+  root: document.documentElement,
+  aurora: document.getElementById('aurora'),
+  frase: document.getElementById('frase'),
+  tom: document.getElementById('tom'),
+  tomNome: document.getElementById('tomNome'),
+  meta: document.getElementById('meta'),
+  botao: document.getElementById('botao'),
+  contador: document.getElementById('contador')
+};
+
+let ultimo = -1;
+let total = 0;
+
+/* ---------- aplica o tom no CSS ---------- */
+function aplicarTom(tom) {
+  const r = el.root.style;
+  r.setProperty('--tom-a', tom.a);
+  r.setProperty('--tom-b', tom.b);
+  r.setProperty('--tom-glow', tom.glow);
+  el.tomNome.textContent = tom.nome;
+}
+
+/* ---------- sorteia uma frase diferente da atual ---------- */
+function sortear() {
+  if (FRASES.length === 1) return 0;
+  let i;
+  do { i = Math.floor(Math.random() * FRASES.length); } while (i === ultimo);
+  return i;
+}
+
+/* ---------- troca a frase com animação ---------- */
+function trocar(festa) {
+  const i = sortear();
+  const f = FRASES[i];
+  const tom = TONS[f.t];
+  ultimo = i;
+  total++;
+
+  el.frase.classList.add('saindo');
+
+  setTimeout(() => {
+    aplicarTom(tom);
+    el.frase.textContent = f.f;
+    el.frase.classList.remove('saindo');
+    el.frase.classList.remove('entrando');
+    void el.frase.offsetWidth;          // força reflow p/ reiniciar a animação
+    el.frase.classList.add('entrando');
+
+    el.meta.innerHTML =
+      '<span class="aspas">//</span> <span class="hash">#' + f.t + '</span> · ' + f.c;
+
+    el.contador.textContent = total === 1 ? '1 frase' : total + ' frases';
+
+    document.title = f.f.length > 42 ? f.f.slice(0, 42) + '…' : f.f;
+
+    if (festa) dispararConfete(tom);
+
+    /* 1 a cada 7: confete extra, o "jackpot" */
+    if (festa && total % 7 === 0) {
+      setTimeout(() => dispararConfete(tom, true), 260);
+    }
+  }, 300);
+}
+
+/* ============================================================
+   CONFETE — canvas, sem biblioteca
+   ============================================================ */
+const canvas = document.getElementById('confete');
+const ctx = canvas.getContext('2d');
+let dpr = Math.min(window.devicePixelRatio || 1, 2);
+let particulas = [];
+let rodando = false;
+
+function redimensionar() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', redimensionar);
+redimensionar();
+
+function dispararConfete(tom, jackpot) {
+  const L = window.innerWidth;
+  const A = window.innerHeight;
+  const origemX = L / 2;
+  const origemY = A * 0.62;
+
+  const qtd = jackpot ? 220 : Math.round(110 * (tom.forca || 1));
+  const cores = tom.confete;
+
+  for (let i = 0; i < qtd; i++) {
+    /* dois leques: um pra esquerda, um pra direita */
+    const lado = i % 2 === 0 ? -1 : 1;
+    const angulo = jackpot
+      ? Math.random() * Math.PI * 2
+      : (-Math.PI / 2) + lado * (Math.random() * 0.95 + 0.1);
+
+    const vel = (jackpot ? 5 + Math.random() * 9 : 7 + Math.random() * 8)
+                * (tom.forca || 1);
+
+    particulas.push({
+      x: origemX + (Math.random() - 0.5) * 40,
+      y: origemY + (Math.random() - 0.5) * 20,
+      vx: Math.cos(angulo) * vel,
+      vy: Math.sin(angulo) * vel,
+      g: tom.gravidade || 0.25,
+      w: 6 + Math.random() * 7,
+      h: 4 + Math.random() * 5,
+      rot: Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.28,
+      cor: cores[Math.floor(Math.random() * cores.length)],
+      forma: tom.formas[Math.floor(Math.random() * tom.formas.length)],
+      vida: 1,
+      decai: 0.0032 + Math.random() * 0.0042,
+      arrasto: 0.988
+    });
+  }
+
+  if (!rodando) { rodando = true; requestAnimationFrame(animar); }
+}
+
+function animar() {
+  const L = window.innerWidth;
+  const A = window.innerHeight;
+  ctx.clearRect(0, 0, L, A);
+
+  for (let i = particulas.length - 1; i >= 0; i--) {
+    const p = particulas[i];
+
+    p.vx *= p.arrasto;
+    p.vy = p.vy * p.arrasto + p.g;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.vrot;
+    p.vida -= p.decai;
+
+    if (p.vida <= 0 || p.y > A + 60) { particulas.splice(i, 1); continue; }
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.vida));
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.cor;
+
+    /* achatamento no eixo Y: dá a sensação de girar no ar */
+    const escalaY = Math.abs(Math.cos(p.rot * 1.6)) * 0.75 + 0.25;
+
+    if (p.forma === 'circulo') {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.w / 2, (p.w / 2) * escalaY, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillRect(-p.w / 2, (-p.h / 2) * escalaY, p.w, p.h * escalaY);
+    }
+
+    ctx.restore();
+  }
+
+  if (particulas.length > 0) {
+    requestAnimationFrame(animar);
+  } else {
+    rodando = false;
+    ctx.clearRect(0, 0, L, A);
+  }
+}
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+el.botao.addEventListener('click', () => trocar(true));
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    if (document.activeElement !== el.botao) {
+      e.preventDefault();
+      trocar(true);
+    }
+  }
+});
+
+/* primeira frase: entra sem confete */
+trocar(false);
+</script>
+</body>
+</html>
